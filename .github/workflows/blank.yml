@@ -1,37 +1,25 @@
-name: Automated API tests using Postman CLI
+name: Automated API tests using Postman CLI and Check notification
 
-on: push
+on:
+  push: {}
+  release: {}
 
 jobs:
   automated-api-tests:
     runs-on: ubuntu-latest
-    env:
-      POSTMAN_COLLECTION_ID: "32378207-cd50564d-c78a-473e-adc5-240b6bb30ed7"
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
+      - uses: actions/checkout@v3
       - name: Install Postman CLI
         run: |
           curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
-
       - name: Login to Postman CLI
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
-
       - name: Run API tests
         run: |
-          postman collection run "$POSTMAN_COLLECTION_ID"
+          postman collection run "32378207-cd50564d-c78a-473e-adc5-240b6bb30ed7"
 
-      - name: Check test result
-        run: |
-          if [ $? -eq 0 ]; then
-            echo "API tests passed successfully!"
-          else
-            echo "API tests failed!"
-            exit 1
-
-  notify-on-success:
-    name: Notify on Success
+  check-notification:
+    name: Check notification
     runs-on: ubuntu-18.04
     needs: automated-api-tests
     steps:
@@ -41,15 +29,7 @@ jobs:
         if: always()
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
-
-  notify-on-failure:
-    name: Notify on Failure
-    runs-on: ubuntu-18.04
-    needs: automated-api-tests
-    if: failure()
-    steps:
-      - uses: actions/checkout@master
-      - name: Microsoft Teams Notification
-        uses: skitionek/notify-microsoft-teams@master
-        with:
-          webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
+          needs: ${{ toJson(needs) }}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          dry_run: True
