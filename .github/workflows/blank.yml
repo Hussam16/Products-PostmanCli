@@ -5,24 +5,56 @@ on: push
 jobs:
   automated-api-tests:
     runs-on: ubuntu-latest
+    env:
+      POSTMAN_COLLECTION_ID: "32378207-cd50564d-c78a-473e-adc5-240b6bb30ed7"
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Install Postman CLI
         run: |
           curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+
       - name: Login to Postman CLI
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+
       - name: Run API tests
         run: |
-          postman collection run "32378207-cd50564d-c78a-473e-adc5-240b6bb30ed7"
-          
-                
-      - name: Notify dedicated teams channel
-        uses: jdcargile/ms-teams-notification@v1.3
+          postman collection run "$POSTMAN_COLLECTION_ID"
+
+      - name: Check test result
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "API tests passed successfully!"
+          else
+            echo "API tests failed!"
+            exit 1
+          fi
+
+  notify-on-success:
+    name: Notify on Success
+    runs-on: ubuntu-18.04
+    needs: automated-api-tests
+    steps:
+      - uses: actions/checkout@master
+      - name: Microsoft Teams Notification
+        uses: skitionek/notify-microsoft-teams@master
+        if: always()
         with:
-          github-token: ${{ github.token }} # this will use the runner's token.
-          ms-teams-webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
-          notification-summary: Your custom notification message 
-          notification-color: 17a2b8
-          timezone: America/Denver
-          
+          webhook_url: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          needs: ${{ toJson(needs) }}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          dry_run: True
+
+  notify-on-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-18.04
+    needs: automated-api-tests
+    if: failure()
+    steps:
+      - uses: actions/checkout@master
+      - name: Microsoft Teams Notification
+        uses: skitionek/notify-microsoft-teams@master
+        with:
+          webhook_url: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
