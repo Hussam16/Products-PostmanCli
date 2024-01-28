@@ -29,7 +29,6 @@ jobs:
           else
             echo "API tests failed!"
             exit 1
-          fi
 
   notify-on-success:
     name: Notify on Success
@@ -41,11 +40,7 @@ jobs:
         uses: skitionek/notify-microsoft-teams@master
         if: always()
         with:
-          webhook_url: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
-          needs: ${{ toJson(needs) }}
-          job: ${{ toJson(job) }}
-          steps: ${{ toJson(steps) }}
-          dry_run: True
+          webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
 
   notify-on-failure:
     name: Notify on Failure
@@ -57,4 +52,4 @@ jobs:
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
         with:
-          webhook_url: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
