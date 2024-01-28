@@ -15,3 +15,14 @@ jobs:
       - name: Run API tests
         run: |
           postman collection run "32378207-cd50564d-c78a-473e-adc5-240b6bb30ed7"
+          
+                
+      - name: Notify dedicated teams channel
+        uses: jdcargile/ms-teams-notification@v1.3
+        with:
+          github-token: ${{ github.token }} # this will use the runner's token.
+          ms-teams-webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          notification-summary: Your custom notification message 
+          notification-color: 17a2b8
+          timezone: America/Denver
+          
