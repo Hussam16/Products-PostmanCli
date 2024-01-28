@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-18.04
     needs: automated-api-tests
     steps:
-      - uses: actions/checkout@master
+
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
         if: always()
