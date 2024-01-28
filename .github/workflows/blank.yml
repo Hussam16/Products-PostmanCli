@@ -20,7 +20,7 @@ jobs:
 
   check-notification:
     name: Check notification
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     needs: automated-api-tests
     steps:
 
